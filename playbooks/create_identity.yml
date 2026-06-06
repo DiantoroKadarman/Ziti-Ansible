@@ -1,0 +1,27 @@
+---
+- name: Create Ziti Identity (Dynamic with -e)
+  hosts: ubscontroller
+  gather_facts: no
+
+  vars:
+    # Tidak ada nilai default — semua harus diberikan via -e
+    # Variabel yang dibutuhkan:
+    # ziti_user, ziti_password, identity_name, jwt_filename
+
+  tasks:
+    - name: Login to Ziti Controller
+      command: >
+        ziti edge login
+        -u {{ ziti_user }}
+        -p {{ ziti_password }}
+
+    - name: Create identity with dynamic name and JWT output
+      command: >
+        ziti edge create identity "{{ identity_name }}"
+        -o /home/ubsc/ansible-identity/{{ jwt_filename }}
+
+    - name: Fetch JWT from VM to WSL2
+      fetch:
+        src: "/home/ubsc/ansible-identity/{{ jwt_filename }}"
+        dest: "/home/diantoro/ziti-ansible/ansible-identity/{{ jwt_filename }}"
+        flat: yes

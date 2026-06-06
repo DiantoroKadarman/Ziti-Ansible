@@ -1,0 +1,32 @@
+---
+- name: Delete Ziti Identity and Clean Up JWT Files
+  hosts: ubscontroller
+  gather_facts: no
+
+  vars:
+    # Variabel wajib via -e:
+    #   ziti_user, ziti_password, identity_name, jwt_filename
+
+  tasks:
+    - name: Login to Ziti Controller
+      command: >
+        ziti edge login
+        -u {{ ziti_user }}
+        -p {{ ziti_password }}
+
+    - name: Delete identity from Ziti Controller
+      command: ziti edge delete identity "{{ identity_name }}"
+
+    - name: Delete JWT file from VM (in ansible-identity directory)
+      file:
+        path: "/home/ubsc/ansible-identity/{{ jwt_filename }}"
+        state: absent
+      ignore_errors: yes
+
+    - name: Delete JWT file from WSL2 (control node)
+      file:
+        path: "/home/diantoro/ziti-ansible/ansible-identity/{{ jwt_filename }}"
+        state: absent
+      delegate_to: localhost
+#      run_once: true
+      ignore_errors: yes
